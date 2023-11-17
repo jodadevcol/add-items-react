@@ -1,33 +1,97 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import React, { useState } from 'react'
 import './App.css'
 
+type ItemID = `${string}-${string}-${string}-${string}-${string}`
+
+interface Item {
+  id: ItemID,
+  timestamp: number,
+  title: string
+}
+
+const INITIAL_ITEMS: Item[] = [
+  {
+    id: crypto.randomUUID(),
+    timestamp: Date.now(),
+    title: 'Planear vacaciones'
+  },
+  {
+    id: crypto.randomUUID(),
+    timestamp: Date.now(),
+    title: 'Compra de detalles'
+  },
+  {
+    id: crypto.randomUUID(),
+    timestamp: Date.now(),
+    title: 'Videojuegos'
+  }
+]
+
 function App() {
-  const [count, setCount] = useState(0)
+  const [items, setItems] = useState(INITIAL_ITEMS)
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+
+    const { elements } = event.currentTarget
+    const valueItem = elements.namedItem('inputList')
+    const isInput = valueItem instanceof HTMLInputElement
+    if (!isInput || isInput == null) return
+
+    const newItem: Item = {
+      id: crypto.randomUUID(),
+      timestamp: Date.now(),
+      title: valueItem.value
+    }
+
+    setItems((prevItems) => {
+      return [...prevItems, newItem]
+    })
+
+    valueItem.value = ''
+  }
+
+  const createHandleRemoveItem = (id: ItemID) => () => {
+    setItems((prevItems) => {
+      return prevItems.filter(currentItem => currentItem.id !== id)
+    })
+  }
 
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <header>
+        <h1>Prueba técnica</h1>
+        <h2>Añadir y eliminar elementos de una lista</h2>
+      </header>
+
+      <main>
+        <aside>
+          <form onSubmit={handleSubmit}>
+            <label htmlFor='inputList'>
+              Write element:
+              <input type='text' name='inputList' required placeholder='Videojuegos' />
+            </label>
+
+            <button>Add element to list</button>
+          </form>
+        </aside>
+
+        <section>
+          <ul>
+            {
+              items.map((item) => {
+                return (
+                  <li key={item.id}>
+                    {item.title}
+
+                    <button onClick={createHandleRemoveItem(item.id)}>Remove</button>
+                  </li>
+                )
+              })
+            }
+          </ul>
+        </section>
+      </main>
     </>
   )
 }
